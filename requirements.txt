@@ -1,0 +1,7 @@
+requests==2.31.0
+chainlit==0.2.0  # Adjust the version as per your project's needs.
+openai==0.27.8
+langchain==0.0.233
+langchain_community==0.0.7
+langchain_openai==0.0.3
+biopython==1.81
