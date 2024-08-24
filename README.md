@@ -1,2 +1,3 @@
 # OpenTargets and PubMed GET List Retrieval App
-https://getgpt.streamlit.app
+[getgpt.streamlit.app
+](https://getgpt.streamlit.app)
