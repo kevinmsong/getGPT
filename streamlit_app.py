@@ -1,4 +1,5 @@
 import streamlit as st
+import toml
 import os
 from openai import OpenAI
 from langchain.agents import Tool, create_react_agent, AgentExecutor
@@ -23,11 +24,17 @@ import requests
 import json
 import pandas as pd
 
+# Load the TOML configuration file
+config = toml.load('config.toml')
+
 # Set up logging
 logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
 
 # Initialize the API key (replace with your actual API key)
+# Set the environment variable
+os.environ["OPENAI_API_KEY"] = config['secrets']['OPENAI_API_KEY']
+
 llm = ChatOpenAI(
     api_key=os.environ["OPENAI_API_KEY"],
     temperature=0.7,
@@ -298,12 +305,12 @@ def extract_genes_with_chatgpt(abstracts, disease_name):
         """
 
         messages = [
-            SystemMessage(content="You are an expert in genomics and bioinformatics, skilled at extracting key information about differentially expressed genes from scientific abstracts."),
-            HumanMessage(content=prompt)
+            {"role": "system", "content": "You are an expert in genomics and bioinformatics, skilled at extracting key information about differentially expressed genes from scientific abstracts."},
+            {"role": "user", "content": prompt}
         ]
 
-        response = llm.predict(messages)
-        return response.strip()
+        response = llm.predict_messages(messages)
+        return response.content.strip()
     except Exception as e:
         logger.exception(f"Error in ChatGPT gene extraction: {str(e)}")
         return f"An error occurred while extracting genes with ChatGPT: {str(e)}"
