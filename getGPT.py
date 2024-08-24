@@ -24,19 +24,12 @@ import requests
 import json
 import pandas as pd
 
-# Load the TOML configuration file
-config = toml.load('config.toml')
-
 # Set up logging
 logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
 
-# Initialize the API key (replace with your actual API key)
-# Set the environment variable
-os.environ["OPENAI_API_KEY"] = config['secrets']['OPENAI_API_KEY']
-
 llm = ChatOpenAI(
-    api_key=os.environ["OPENAI_API_KEY"],
+    api_key=st.secrets["OPENAI_API_KEY"],
     temperature=0.7,
     max_tokens=1024
 )
