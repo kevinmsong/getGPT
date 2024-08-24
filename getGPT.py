@@ -30,7 +30,7 @@ logger = logging.getLogger(__name__)
 
 llm = ChatOpenAI(
     api_key=st.secrets["OPENAI_API_KEY"],
-    temperature=0.7,
+    temperature=0.1,
     max_tokens=1024
 )
 
