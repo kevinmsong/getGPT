@@ -28,7 +28,7 @@ logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(name)s - %(leve
 logger = logging.getLogger(__name__)
 
 # Initialize the API key (replace with your actual API key)
-os.environ["OPENAI_API_KEY"] = "sk-None-PVtbsS676iagEfhPaYUqT3BlbkFJqtiyuLiLA9sfmc7h6Syg"
+os.environ["OPENAI_API_KEY"] = "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"
 llm = ChatOpenAI(
     api_key=os.environ["OPENAI_API_KEY"],
     temperature=0.7,
