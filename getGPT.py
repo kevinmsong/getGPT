@@ -392,7 +392,7 @@ def test_opentargets_api():
 
 # Streamlit app
 def main():
-    st.title("Virtual Biologist and Disease Gene Retrieval App")
+    st.title("GET Set Retrieval and Paper Analysis App")
 
     # Initialize session state
     if 'qa_chain' not in st.session_state:
