@@ -429,9 +429,8 @@ def create_expert_agent(expert_type):
         st.error(f"An error occurred while creating the expert agent: {str(e)}")
         return None
         
-# Update the main function to handle potential None return from create_expert_agent
 def main():
-    st.title("Virtual Biologist, GET Set Retrieval, and Paper Analysis App")
+    st.title("GET Set Retrieval and Paper Analysis App")
 
     # Initialize session state
     if 'qa_chain' not in st.session_state:
@@ -443,7 +442,7 @@ def main():
         if st.session_state.expert_agent is None:
             st.error("Failed to initialize expert agent. Please try refreshing the page.")
             return
-            
+
     # Sidebar for expert selection
     st.sidebar.title("Select Expert")
     experts = ["Biologist", "Informatician", "Computer Scientist", "General Expert"]
@@ -452,11 +451,41 @@ def main():
     if selected_expert != st.session_state.expert:
         st.session_state.expert = selected_expert
         st.session_state.expert_agent = create_expert_agent(selected_expert)
+        if st.session_state.expert_agent is None:
+            st.error(f"Failed to initialize {selected_expert} agent. Please try again.")
+            return
 
     # Main app functionality
-    tab1, tab2, tab3, tab4 = st.tabs(["Gene Analysis", "PDF Analysis", "API Test", "Expert Q&A"])
+    tab1, tab2, tab3, tab4 = st.tabs(["Expert Q&A", "Gene Analysis", "PDF Analysis", "API Test"])
 
     with tab1:
+        st.header(f"Expert Q&A: {st.session_state.expert}")
+        st.write(f"You are now chatting with a {st.session_state.expert}. Ask any questions related to genetics, bioinformatics, or computational biology.")
+        
+        # Display chat history
+        if hasattr(st.session_state.expert_agent, 'memory') and hasattr(st.session_state.expert_agent.memory, 'chat_memory'):
+            for message in st.session_state.expert_agent.memory.chat_memory.messages:
+                if isinstance(message, HumanMessage):
+                    st.write("Human:", message.content)
+                elif isinstance(message, AIMessage):
+                    st.write("AI:", message.content)
+        else:
+            st.write("No chat history available.")
+
+        # User input for new question
+        user_input = st.text_input("Ask a question:")
+        if st.button("Send"):
+            if user_input.strip():  # Check if input is not empty
+                with st.spinner("Generating response..."):
+                    try:
+                        response = st.session_state.expert_agent.predict(input=user_input)
+                        st.write("AI:", response)
+                    except Exception as e:
+                        st.error(f"An error occurred while generating the response: {str(e)}")
+            else:
+                st.warning("Please enter a question before sending.")
+    
+    with tab2:
         st.header("Gene Analysis")
         disease_name = st.text_input("Enter the name of the disease you want to query:")
         if st.button("Get Gene List"):
@@ -474,7 +503,7 @@ def main():
                         mime="text/csv",
                     )
 
-    with tab2:
+    with tab3:
         st.header("PDF Analysis")
         uploaded_file = st.file_uploader("Choose a PDF file", type="pdf")
         if uploaded_file is not None:
@@ -496,30 +525,15 @@ def main():
                     response = st.session_state.qa_chain({"query": question})
                     st.write("Answer:", response['result'])
 
-    with tab3:
+    with tab4:
         st.header("API Test")
         if st.button("Test OpenTargets APIs"):
             with st.spinner("Testing APIs..."):
                 result = test_opentargets_api()
                 st.write(result)
-
-    with tab4:
-        st.header(f"Expert Q&A: {st.session_state.expert}")
-        st.write(f"You are now chatting with a {st.session_state.expert}. Ask any questions related to genetics, bioinformatics, or computational biology.")
-        
-        # Display chat history
-        for message in st.session_state.expert_agent.memory.chat_memory.messages:
-            if isinstance(message, HumanMessage):
-                st.write("Human:", message.content)
-            elif isinstance(message, SystemMessage):
-                st.write("AI:", message.content)
-
-        # User input for new question
-        user_input = st.text_input("Ask a question:")
-        if st.button("Send"):
-            with st.spinner("Generating response..."):
-                response = st.session_state.expert_agent.predict(input=user_input)
-                st.write("AI:", response)
+                
+if __name__ == "__main__":
+    main()
 
 if __name__ == "__main__":
     main()
