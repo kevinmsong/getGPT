@@ -532,5 +532,7 @@ def main():
                 result = test_opentargets_api()
                 st.write(result)
 
+    st.sidebar.text("Version 1.2.0")
+
 if __name__ == "__main__":
     main()
