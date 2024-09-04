@@ -18,7 +18,7 @@ from Bio import Medline
 import io
 import re
 from collections import Counter
-from langchain.schema import HumanMessage, SystemMessage
+from langchain.schema import HumanMessage, SystemMessage, AIMessage
 import csv
 import requests
 import json
