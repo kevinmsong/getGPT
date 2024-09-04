@@ -460,7 +460,7 @@ def main():
 
     with tab1:
         st.header(f"Expert Q&A: {st.session_state.expert}")
-        st.write(f"You are now chatting with a {st.session_state.expert}. Ask any questions related to genetics, bioinformatics, or computational biology.")
+        st.write(f"You are now chatting with a {st.session_state.expert}.")
         
         # Display chat history
         if hasattr(st.session_state.expert_agent, 'memory') and hasattr(st.session_state.expert_agent.memory, 'chat_memory'):
