@@ -23,6 +23,8 @@ import csv
 import requests
 import json
 import pandas as pd
+from langchain.memory import ConversationBufferMemory
+from langchain.chains import ConversationChain
 
 # Set up logging
 logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
@@ -307,7 +309,7 @@ def extract_genes_with_chatgpt(abstracts, disease_name):
     except Exception as e:
         logger.exception(f"Error in ChatGPT gene extraction: {str(e)}")
         return f"An error occurred while extracting genes with ChatGPT: {str(e)}"
-    
+        
 def handle_file_upload(uploaded_file):
     try:
         with open("temp.pdf", "wb") as f:
@@ -339,7 +341,6 @@ def handle_file_upload(uploaded_file):
     except Exception as e:
         logger.error(f"Error processing PDF: {str(e)}")
         return None, f"An error occurred while processing the PDF: {str(e)}"
-
 def test_opentargets_api():
     try:
         # Test Platform API
@@ -390,6 +391,24 @@ def test_opentargets_api():
         logger.exception("Error testing OpenTargets APIs")
         return f"Error testing OpenTargets APIs: {str(e)}"
 
+# New function to create expert agents
+def create_expert_agent(expert_type):
+    if expert_type == "Biologist":
+        system_message = """You are an expert biologist specializing in genetics and molecular biology. 
+        You have extensive knowledge of cellular processes, gene regulation, and disease mechanisms."""
+    elif expert_type == "Informatician":
+        system_message = """You are an expert bioinformatician with deep knowledge of computational biology, 
+        data analysis techniques, and bioinformatics tools. You excel at interpreting complex biological data."""
+    elif expert_type == "Computer Scientist":
+        system_message = """You are an expert computer scientist specializing in bioinformatics algorithms, 
+        machine learning in biology, and large-scale data processing. You have a strong background in software engineering and data structures."""
+    else:  # General Expert
+        system_message = """You are a multidisciplinary expert with knowledge spanning biology, informatics, 
+        and computer science. You can provide insights on a wide range of topics related to genetics, bioinformatics, and computational biology."""
+
+    memory = ConversationBufferMemory()
+    return ConversationChain(llm=llm, memory=memory, verbose=True, prompt=PromptTemplate.from_template(system_message + "\n\nHuman: {input}\nAI: "))
+
 # Streamlit app
 def main():
     st.title("GET Set Retrieval and Paper Analysis App")
@@ -399,15 +418,20 @@ def main():
         st.session_state.qa_chain = None
     if 'expert' not in st.session_state:
         st.session_state.expert = "General Expert"
+    if 'expert_agent' not in st.session_state:
+        st.session_state.expert_agent = create_expert_agent("General Expert")
 
     # Sidebar for expert selection
     st.sidebar.title("Select Expert")
     experts = ["Biologist", "Informatician", "Computer Scientist", "General Expert"]
     selected_expert = st.sidebar.selectbox("Choose an expert", experts, index=experts.index(st.session_state.expert))
-    st.session_state.expert = selected_expert
+    
+    if selected_expert != st.session_state.expert:
+        st.session_state.expert = selected_expert
+        st.session_state.expert_agent = create_expert_agent(selected_expert)
 
     # Main app functionality
-    tab1, tab2, tab3 = st.tabs(["Gene Analysis", "PDF Analysis", "API Test"])
+    tab1, tab2, tab3, tab4 = st.tabs(["Gene Analysis", "PDF Analysis", "API Test", "Expert Q&A"])
 
     with tab1:
         st.header("Gene Analysis")
@@ -455,6 +479,24 @@ def main():
             with st.spinner("Testing APIs..."):
                 result = test_opentargets_api()
                 st.write(result)
+
+    with tab4:
+        st.header(f"Expert Q&A: {st.session_state.expert}")
+        st.write(f"You are now chatting with a {st.session_state.expert}. Ask any questions related to genetics, bioinformatics, or computational biology.")
+        
+        # Display chat history
+        for message in st.session_state.expert_agent.memory.chat_memory.messages:
+            if isinstance(message, HumanMessage):
+                st.write("Human:", message.content)
+            elif isinstance(message, SystemMessage):
+                st.write("AI:", message.content)
+
+        # User input for new question
+        user_input = st.text_input("Ask a question:")
+        if st.button("Send"):
+            with st.spinner("Generating response..."):
+                response = st.session_state.expert_agent.predict(input=user_input)
+                st.write("AI:", response)
 
 if __name__ == "__main__":
     main()
