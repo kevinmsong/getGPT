@@ -494,16 +494,17 @@ def main():
                 st.session_state.gene_analysis_result = response
                 st.session_state.gene_data = gene_data
 
-        disease_name = st.text_input("Enter the name of the disease you want to query:", key="disease_input")
+        disease_name = st.text_input("Enter the name of the disease you want to query:", key="disease_input", value=st.session_state.disease_name)
         st.session_state.disease_name = disease_name  # Store the disease name in session state
         
         if st.button("Get Gene List", key="gene_list_button", on_click=get_gene_list):
             pass  # The actual processing is done in the get_gene_list function
         
-        if st.session_state.gene_analysis_result:
-            st.text_area("Analysis Result", st.session_state.gene_analysis_result, height=400, key="gene_analysis_result")
+        # Check if gene_analysis_result exists and is not None
+        if 'gene_analysis_result' in st.session_state and st.session_state.gene_analysis_result is not None:
+            st.text_area("Analysis Result", st.session_state.gene_analysis_result, height=400, key="gene_analysis_result_display")
             
-            if st.session_state.gene_data:
+            if 'gene_data' in st.session_state and st.session_state.gene_data is not None:
                 df = pd.DataFrame(st.session_state.gene_data)
                 st.dataframe(df)
                 csv = df.to_csv(index=False)
