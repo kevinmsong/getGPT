@@ -430,7 +430,7 @@ def create_expert_agent(expert_type):
         return None
 
 def main():
-    st.title("GET Set Retrieval and Paper Analysis App")
+    st.title("Virtual Biologist, GET Set Retrieval, and Paper Analysis App")
 
     # Initialize session state
     if 'qa_chain' not in st.session_state:
