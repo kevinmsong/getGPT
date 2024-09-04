@@ -25,6 +25,7 @@ import json
 import pandas as pd
 from langchain.memory import ConversationBufferMemory
 from langchain.chains import ConversationChain
+from langchain.prompts import ChatPromptTemplate, MessagesPlaceholder
 
 # Set up logging
 logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
@@ -341,6 +342,7 @@ def handle_file_upload(uploaded_file):
     except Exception as e:
         logger.error(f"Error processing PDF: {str(e)}")
         return None, f"An error occurred while processing the PDF: {str(e)}"
+        
 def test_opentargets_api():
     try:
         # Test Platform API
@@ -391,7 +393,6 @@ def test_opentargets_api():
         logger.exception("Error testing OpenTargets APIs")
         return f"Error testing OpenTargets APIs: {str(e)}"
 
-# New function to create expert agents
 def create_expert_agent(expert_type):
     try:
         if expert_type == "Biologist":
@@ -407,23 +408,27 @@ def create_expert_agent(expert_type):
             system_message = """You are a multidisciplinary expert with knowledge spanning biology, informatics, 
             and computer science. You can provide insights on a wide range of topics related to genetics, bioinformatics, and computational biology."""
 
-        memory = ConversationBufferMemory()
+        memory = ConversationBufferMemory(return_messages=True)
         
         # Create the prompt template
-        prompt_template = PromptTemplate.from_template(system_message + "\n\nHuman: {input}\nAI: ")
+        prompt = ChatPromptTemplate.from_messages([
+            ("system", system_message),
+            MessagesPlaceholder(variable_name="history"),
+            ("human", "{input}")
+        ])
         
         # Create the ConversationChain
         return ConversationChain(
             llm=llm,
             memory=memory,
-            verbose=True,
-            prompt=prompt_template
+            prompt=prompt,
+            verbose=True
         )
     except Exception as e:
         logger.error(f"Error creating expert agent: {str(e)}")
         st.error(f"An error occurred while creating the expert agent: {str(e)}")
         return None
-
+        
 # Update the main function to handle potential None return from create_expert_agent
 def main():
     st.title("Virtual Biologist, GET Set Retrieval, and Paper Analysis App")
