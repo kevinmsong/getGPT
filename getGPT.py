@@ -468,7 +468,7 @@ def main():
                 if isinstance(message, HumanMessage):
                     st.write("Human:", message.content)
                 elif isinstance(message, AIMessage):
-                    st.write("{st.session_state.expert}:", message.content)
+                    st.write(f"{st.session_state.expert}:", message.content)
         else:
             st.write("No chat history available.")
 
@@ -479,7 +479,7 @@ def main():
                 with st.spinner("Generating response..."):
                     try:
                         response = st.session_state.expert_agent.predict(input=user_input)
-                        st.write("{st.session_state.expert}:", response)
+                        st.write(f"{st.session_state.expert}:", response)
                     except Exception as e:
                         st.error(f"An error occurred while generating the response: {str(e)}")
             else:
