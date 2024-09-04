@@ -487,22 +487,33 @@ def main():
     
     with tab2:
         st.header("Gene Analysis")
-        disease_name = st.text_input("Enter the name of the disease you want to query:", key="disease_input")
-        if st.button("Get Gene List", key="gene_list_button"):
+        
+        def get_gene_list():
             with st.spinner("Querying OpenTargets, OpenTargets Genetics, and PubMed abstracts..."):
-                response, gene_data = query_opentargets(disease_name)
-                st.text_area("Analysis Result", response, height=400, key="gene_analysis_result")
-                if gene_data:
-                    df = pd.DataFrame(gene_data)
-                    st.dataframe(df)
-                    csv = df.to_csv(index=False)
-                    st.download_button(
-                        label="Download CSV",
-                        data=csv,
-                        file_name="gene_analysis.csv",
-                        mime="text/csv",
-                        key="gene_csv_download"
-                    )
+                response, gene_data = query_opentargets(st.session_state.disease_name)
+                st.session_state.gene_analysis_result = response
+                st.session_state.gene_data = gene_data
+
+        disease_name = st.text_input("Enter the name of the disease you want to query:", key="disease_input")
+        st.session_state.disease_name = disease_name  # Store the disease name in session state
+        
+        if st.button("Get Gene List", key="gene_list_button", on_click=get_gene_list):
+            pass  # The actual processing is done in the get_gene_list function
+        
+        if st.session_state.gene_analysis_result:
+            st.text_area("Analysis Result", st.session_state.gene_analysis_result, height=400, key="gene_analysis_result")
+            
+            if st.session_state.gene_data:
+                df = pd.DataFrame(st.session_state.gene_data)
+                st.dataframe(df)
+                csv = df.to_csv(index=False)
+                st.download_button(
+                    label="Download CSV",
+                    data=csv,
+                    file_name="gene_analysis.csv",
+                    mime="text/csv",
+                    key="gene_csv_download"
+                )
 
     with tab3:
         st.header("PDF Analysis")
