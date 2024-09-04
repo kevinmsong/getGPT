@@ -382,7 +382,7 @@ def test_opentargets_api():
             return f"Error querying OpenTargets Genetics API: {genetics_response['errors'][0]['message']}"
         
         genetics_version = genetics_response["data"]["meta"]["apiVersion"]
-        logger.info(f"Successfully connected to OpenTargets Genetics API. Version: {genetics_version['major']}.{genetics_version['minor']}.{genetics_version['patch']}")
+        logger.info(f"Successfully connected to OpenTargets Genetics API. Version: {genetics_version['major']}.{genetics_version['minor']}.{genetics_version['patch']}\n")
         genetics_message = f"Successfully connected to OpenTargets Genetics API. Version: {genetics_version['major']}.{genetics_version['minor']}.{genetics_version['patch']}"
 
         return f"{platform_message}\n{genetics_message}"
@@ -393,25 +393,40 @@ def test_opentargets_api():
 
 # New function to create expert agents
 def create_expert_agent(expert_type):
-    if expert_type == "Biologist":
-        system_message = """You are an expert biologist specializing in genetics and molecular biology. 
-        You have extensive knowledge of cellular processes, gene regulation, and disease mechanisms."""
-    elif expert_type == "Informatician":
-        system_message = """You are an expert bioinformatician with deep knowledge of computational biology, 
-        data analysis techniques, and bioinformatics tools. You excel at interpreting complex biological data."""
-    elif expert_type == "Computer Scientist":
-        system_message = """You are an expert computer scientist specializing in bioinformatics algorithms, 
-        machine learning in biology, and large-scale data processing. You have a strong background in software engineering and data structures."""
-    else:  # General Expert
-        system_message = """You are a multidisciplinary expert with knowledge spanning biology, informatics, 
-        and computer science. You can provide insights on a wide range of topics related to genetics, bioinformatics, and computational biology."""
+    try:
+        if expert_type == "Biologist":
+            system_message = """You are an expert biologist specializing in genetics and molecular biology. 
+            You have extensive knowledge of cellular processes, gene regulation, and disease mechanisms."""
+        elif expert_type == "Informatician":
+            system_message = """You are an expert bioinformatician with deep knowledge of computational biology, 
+            data analysis techniques, and bioinformatics tools. You excel at interpreting complex biological data."""
+        elif expert_type == "Computer Scientist":
+            system_message = """You are an expert computer scientist specializing in bioinformatics algorithms, 
+            machine learning in biology, and large-scale data processing. You have a strong background in software engineering and data structures."""
+        else:  # General Expert
+            system_message = """You are a multidisciplinary expert with knowledge spanning biology, informatics, 
+            and computer science. You can provide insights on a wide range of topics related to genetics, bioinformatics, and computational biology."""
 
-    memory = ConversationBufferMemory()
-    return ConversationChain(llm=llm, memory=memory, verbose=True, prompt=PromptTemplate.from_template(system_message + "\n\nHuman: {input}\nAI: "))
+        memory = ConversationBufferMemory()
+        
+        # Create the prompt template
+        prompt_template = PromptTemplate.from_template(system_message + "\n\nHuman: {input}\nAI: ")
+        
+        # Create the ConversationChain
+        return ConversationChain(
+            llm=llm,
+            memory=memory,
+            verbose=True,
+            prompt=prompt_template
+        )
+    except Exception as e:
+        logger.error(f"Error creating expert agent: {str(e)}")
+        st.error(f"An error occurred while creating the expert agent: {str(e)}")
+        return None
 
-# Streamlit app
+# Update the main function to handle potential None return from create_expert_agent
 def main():
-    st.title("GET Set Retrieval and Paper Analysis App")
+    st.title("Virtual Biologist, GET Set Retrieval, and Paper Analysis App")
 
     # Initialize session state
     if 'qa_chain' not in st.session_state:
@@ -420,7 +435,10 @@ def main():
         st.session_state.expert = "General Expert"
     if 'expert_agent' not in st.session_state:
         st.session_state.expert_agent = create_expert_agent("General Expert")
-
+        if st.session_state.expert_agent is None:
+            st.error("Failed to initialize expert agent. Please try refreshing the page.")
+            return
+            
     # Sidebar for expert selection
     st.sidebar.title("Select Expert")
     experts = ["Biologist", "Informatician", "Computer Scientist", "General Expert"]
