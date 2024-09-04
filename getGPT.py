@@ -428,7 +428,7 @@ def create_expert_agent(expert_type):
         logger.error(f"Error creating expert agent: {str(e)}")
         st.error(f"An error occurred while creating the expert agent: {str(e)}")
         return None
-        
+
 def main():
     st.title("GET Set Retrieval and Paper Analysis App")
 
@@ -446,7 +446,7 @@ def main():
     # Sidebar for expert selection
     st.sidebar.title("Select Expert")
     experts = ["Biologist", "Informatician", "Computer Scientist", "General Expert"]
-    selected_expert = st.sidebar.selectbox("Choose an expert", experts, index=experts.index(st.session_state.expert))
+    selected_expert = st.sidebar.selectbox("Choose an expert", experts, index=experts.index(st.session_state.expert), key="expert_selector")
     
     if selected_expert != st.session_state.expert:
         st.session_state.expert = selected_expert
@@ -473,8 +473,8 @@ def main():
             st.write("No chat history available.")
 
         # User input for new question
-        user_input = st.text_input("Ask a question:")
-        if st.button("Send"):
+        user_input = st.text_input("Ask a question:", key="expert_question_input")
+        if st.button("Send", key="expert_send_button"):
             if user_input.strip():  # Check if input is not empty
                 with st.spinner("Generating response..."):
                     try:
@@ -487,11 +487,11 @@ def main():
     
     with tab2:
         st.header("Gene Analysis")
-        disease_name = st.text_input("Enter the name of the disease you want to query:")
-        if st.button("Get Gene List"):
+        disease_name = st.text_input("Enter the name of the disease you want to query:", key="disease_input")
+        if st.button("Get Gene List", key="gene_list_button"):
             with st.spinner("Querying OpenTargets, OpenTargets Genetics, and PubMed abstracts..."):
                 response, gene_data = query_opentargets(disease_name)
-                st.text_area("Analysis Result", response, height=400)
+                st.text_area("Analysis Result", response, height=400, key="gene_analysis_result")
                 if gene_data:
                     df = pd.DataFrame(gene_data)
                     st.dataframe(df)
@@ -501,11 +501,12 @@ def main():
                         data=csv,
                         file_name="gene_analysis.csv",
                         mime="text/csv",
+                        key="gene_csv_download"
                     )
 
     with tab3:
         st.header("PDF Analysis")
-        uploaded_file = st.file_uploader("Choose a PDF file", type="pdf")
+        uploaded_file = st.file_uploader("Choose a PDF file", type="pdf", key="pdf_uploader")
         if uploaded_file is not None:
             with st.spinner("Processing PDF..."):
                 qa_chain, summary = handle_file_upload(uploaded_file)
@@ -519,21 +520,18 @@ def main():
 
         if st.session_state.qa_chain:
             st.subheader("Ask a question about the PDF")
-            question = st.text_input("Enter your question:")
-            if st.button("Ask"):
+            question = st.text_input("Enter your question:", key="pdf_question_input")
+            if st.button("Ask", key="pdf_question_button"):
                 with st.spinner("Generating answer..."):
                     response = st.session_state.qa_chain({"query": question})
                     st.write("Answer:", response['result'])
 
     with tab4:
         st.header("API Test")
-        if st.button("Test OpenTargets APIs"):
+        if st.button("Test OpenTargets APIs", key="api_test_button"):
             with st.spinner("Testing APIs..."):
                 result = test_opentargets_api()
                 st.write(result)
-                
-if __name__ == "__main__":
-    main()
 
 if __name__ == "__main__":
     main()
