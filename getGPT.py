@@ -396,13 +396,13 @@ def test_opentargets_api():
 def create_expert_agent(expert_type):
     try:
         if expert_type == "Biologist":
-            system_message = """You are an expert biologist specializing in genetics and molecular biology. 
+            system_message = """You are a Nobel Prize-level expert biologist specializing in genetics and molecular biology. 
             You have extensive knowledge of cellular processes, gene regulation, and disease mechanisms."""
         elif expert_type == "Informatician":
-            system_message = """You are an expert bioinformatician with deep knowledge of computational biology, 
+            system_message = """You are a Nobel Prize and ACM Turing Award-level expert bioinformatician with deep knowledge of computational biology, 
             data analysis techniques, and bioinformatics tools. You excel at interpreting complex biological data."""
         elif expert_type == "Computer Scientist":
-            system_message = """You are an expert computer scientist specializing in bioinformatics algorithms, 
+            system_message = """You are ACM Turing Award-level expert computer scientist specializing in bioinformatics algorithms, 
             machine learning in biology, and large-scale data processing. You have a strong background in software engineering and data structures."""
         else:  # General Expert
             system_message = """You are a multidisciplinary expert with knowledge spanning biology, informatics, 
