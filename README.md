@@ -21,7 +21,7 @@ Live app: [getgpt.streamlit.app](https://getgpt.streamlit.app)
 
 - Python 3 with the packages in `requirements.txt` (requests, chainlit, openai, langchain, langchain_community, langchain_openai, biopython, xmltodict, pypdf, faiss-cpu)
 - For the Streamlit app, also `streamlit`, `pandas`, and `toml` (not listed in `requirements.txt`)
-- An OpenAI API key
+- An OpenAI API key, supplied through the environment (never committed)
 
 ## Setup
 
@@ -30,7 +30,17 @@ pip install -r requirements.txt
 pip install streamlit pandas toml   # for getGPT.py
 ```
 
-For the Streamlit app, add the key to `.streamlit/secrets.toml`:
+Set `OPENAI_API_KEY` before starting either app. Copy the example file and fill in your key locally (`.env` is gitignored):
+
+```bash
+cp .env.example .env
+```
+
+`.env.example` contains only `OPENAI_API_KEY=`. You can instead export the variable in your shell. Chainlit loads a project `.env` when you run `chainlit run`.
+
+`chainlit_app.py` reads `OPENAI_API_KEY` with `os.getenv` and raises `RuntimeError` if it is missing or blank. The OpenAI client and LangChain use that same variable.
+
+The Streamlit app (`getGPT.py`) reads the key from Streamlit secrets. Put it in `.streamlit/secrets.toml` (gitignored) and do not commit that file:
 
 ```toml
 OPENAI_API_KEY = "YOUR_OPENAI_API_KEY"
@@ -54,4 +64,4 @@ chainlit run chainlit_app.py
 
 ## Security
 
-`chainlit_app.py` currently **hardcodes an OpenAI API key** in source and writes it into `OPENAI_API_KEY`, which overrides any key in your environment. Treat that key as exposed: **rotate it**, delete that line, and set `OPENAI_API_KEY` as an environment variable instead. This README does not include the key.
+API keys stay out of source. `chainlit_app.py` loads `OPENAI_API_KEY` from the environment only. `getGPT.py` loads it from Streamlit secrets (`st.secrets`), not from a literal in the file. If a key was ever committed, rotate it in the OpenAI dashboard and set the new value only in `.env` or `.streamlit/secrets.toml`.
