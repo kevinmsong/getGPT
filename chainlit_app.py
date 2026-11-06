@@ -26,10 +26,16 @@ import csv
 logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
 
-# Initialize the API key (replace with your actual API key)
-os.environ["OPENAI_API_KEY"] = "sk-None-PVtbsS676iagEfhPaYUqT3BlbkFJqtiyuLiLA9sfmc7h6Syg"
+# Load the OpenAI API key from the environment. Never hardcode it.
+openai_api_key = os.getenv("OPENAI_API_KEY", "").strip()
+if not openai_api_key:
+    raise RuntimeError(
+        "OPENAI_API_KEY is not set. Add it to your environment or a local .env file "
+        "(see .env.example) before starting the app."
+    )
+os.environ["OPENAI_API_KEY"] = openai_api_key
 llm = ChatOpenAI(
-    api_key=os.environ["OPENAI_API_KEY"],
+    api_key=openai_api_key,
     temperature=0.7,
     max_tokens=1024
 )
